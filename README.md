@@ -1,6 +1,6 @@
-# HybridRAIDReconstructor
+# Hybrid RAID Reconstructor
 
-This tool is a tool to rebuild RAID against Linux based hybrid RAID
+This tool is a tool to rebuild RAID against Linux based hybrid RAID. This tool was developed in python.
 
 ◎ support hybrid RAID
  - Drobo, BeyondRAID
