@@ -6,7 +6,7 @@ This tool can rebuild RAID against Linux based hybrid RAID. This tool was develo
  - Drobo, BeyondRAID
  - NETGEAR, X-RAID2
  - Seagate, SimplyRAID
- - Synology, SHR
+ - Synology, SHR and SHR2
 
 ◎ how to use
  - input : only raw image file. input the directory path.
