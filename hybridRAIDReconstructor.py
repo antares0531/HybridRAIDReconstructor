@@ -17,6 +17,7 @@ class HybridRAID:
 
         self.partitionList = []
         self.bvdList = []
+        self.vdList = []
 
     def __del__(self):
         self.fp.close()
@@ -133,7 +134,7 @@ class HybridRAID:
             
             for atom in self.bvdList:
                 if atom[0] == UUID:
-                    # UUID, RAIDType, StripeSize, StripeMap, numberOfDiks, hasLVM, ExtentList, LVMList
+                    # UUID, RAIDType, StripeSize, StripeMap, numberOfDiks, hasLVM, ExtentList
                     # Extent List : filePath, Partition Start offset, Partition Size, ExtentStartOffset, Extent Size, diskOrder                                       
                     atom[5].append([partition[0], partition[1], partition[2], partition[1]+startOffset*512, sizeOfExtents*512, diskOrder])
                     check = True
@@ -142,7 +143,7 @@ class HybridRAID:
             if check is False:
                 ExtentList = []
                 ExtentList.append([partition[0], partition[1], partition[2], partition[1]+startOffset*512, sizeOfExtents*512, diskOrder])
-                self.bvdList.append([UUID, RAIDType, stripeMap, numberOfDisks, False, ExtentList, []])
+                self.bvdList.append([UUID, RAIDType, stripeMap, numberOfDisks, False, ExtentList, 0])
 
         # print BVD info
         index = 1
@@ -169,7 +170,37 @@ class HybridRAID:
 
     def _CreateVD(self):
         # Parsing the LVM
-        Todo = 10
+        for atom in self.bvdList:
+            for extent in atom[5]:
+                if extent[5] is 0:
+                    try:
+                        self.fp = open(extent[0], 'rb')
+                        self.fp.seek(extent[3]+512)
+                        block = self.fp.read(512)
+                    except IOError:
+                        print('Error : Could not image file open')
+                        exit(1)
+
+                    if block[0:8] != b'\x4C\x41\x42\x45\x4C\x4F\x4E\x45':
+                        self.fp.close()
+                        break
+                    else:
+                        self.fp.seek(0)
+                        self.fp.seek(extent[3]+4096)
+                        block = self.fp.read(512)
+                        lvmMetadataOffset = struct.unpack('<Q', block[0x28:0x30])[0]
+                        lvmMetadataSize = struct.unpack('<Q', block[0x30:0x38])[0]
+
+                        self.fp.seek(0)
+                        self.fp.seek(extent[3]+4096+lvmMetadataOffset)
+                        block = self.fp.read(lvmMetadataSize)
+                        self.vdList.append(block)
+                        self.fp.close()
+
+        self.vdList = list(set(self.vdList))
+        print('Logical Volume List info :')
+        for atom in self.vdList:
+            print(atom.decode('ascii'))
 
     def run(self):       
         if len(self.filePathList) <= 0:
@@ -185,8 +216,6 @@ class HybridRAID:
                     exit()
                 else:
                     self._CreateVD()
-            
-
 
 def main(DirectoryPath):
     parser = argparse.ArgumentParser(usage='HybridRAIDReconstructor --i INPUT_DIRECTORY --o OUTPUT_DIRECTORY', description='This tool is a tool to rebuild RAID against Linux based hybrid RAID')
