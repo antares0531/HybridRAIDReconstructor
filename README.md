@@ -18,6 +18,5 @@ This tool can rebuild RAID against Linux based hybrid RAID. This tool was develo
  - Downloads : https://koreaoffice-my.sharepoint.com/:f:/g/personal/antares_korea_edu/EmzGXopXLelJqqF8YkUID8gB3kLwGk44NpBD79uewrtdJA?e=dEHKyo
 
 ◎ Planned:
- - LVM Module(CreateVD Function)
  - read EWF, EWF2 file
 
